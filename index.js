@@ -194,3 +194,110 @@ console.log('\n')
 await userMenu();
 };
 
+// -------------------------\ ADD /-------------------------- \\
+// creates new Employee into the db
+async function addEmployee() {
+
+  // Local prompt questions.
+  await inquirer.prompt([{
+      message: 'Enter Name:',
+      name: 'firstName'
+    },
+    {
+      message: 'Enter Last Name:',
+      name: 'lastName'
+    },
+    {
+      type: 'list',  
+      message: 'Select a Role',
+      name: 'role',
+      choices: await db.rolesGenerator()
+    },
+    {
+      type: 'list',  
+      message: 'Who is the Manager',
+      name: 'manager',
+      choices: await db.namesGenerator()
+    }
+  ]).then(async function ({ firstName, lastName, role, manager }) {
+
+      // Gets the database using "MySQL syntax" and returns an array with the requested objects inside.
+      const [rows] = await connection.query('INSERT INTO employee SET ?', {
+          first_name: firstName,
+          last_name: lastName,
+          role_id: await cnv.getRoleId(role),
+          manager_id: await cnv.getEmployeeId(manager)
+      })
+
+      // Confirms that the action was completed.
+      console.log(`\x1b[92msucced, new employee: ${firstName} ${lastName}, added${space}\x1b[39m`)
+
+      // Go back to main menu.
+      await userMenu()
+  })
+
+}
+
+// creates new Department into the db
+async function addDepartment() {
+
+  // Local prompt questions.
+  await inquirer.prompt(
+      {
+          name: "department",
+          type: "input",
+          message: "What department would you like to add?"
+      }
+
+  ).then(async function ({ department }) {
+
+      // Gets the database using "MySQL syntax" and returns an array with the requested objects inside.
+      const [rows] = await connection.query('INSERT INTO department SET ?',{
+              name: department
+          })
+
+      // Confirms that the action was completed.    
+      console.log(`\x1b[92mSucced, new department: ${department}, added${space}\x1b[39m`)
+
+      // Go back to main menu.
+      await userMenu()
+  })
+}
+
+// creates new Role into the db
+async function addRole() {
+  
+  // Local prompt questions.
+  await inquirer.prompt([{
+      message: 'Enter Title:',
+      name: 'title'
+    },
+    {
+      message: 'Enter Salary:',
+      name: 'salary'
+    },
+    {
+      type: 'list',  
+      message: 'Choose Department',
+      name: 'department',
+      choices: await db.departmentsGenerator()
+    }
+  ]).then(async function ({ title, salary, department }) {
+    
+      // Gets the database using "MySQL syntax" and returns an array with the requested objects inside.
+      const [rows] = await connection.query('INSERT INTO role SET ?', {
+          title: title,
+          salary: salary,
+          department_id: await cnv.getDepartmentId(department)
+      })
+
+      // Confirms that the action was completed.
+      console.log(`\x1b[92msucced, new Role: ${title}, added${space}\x1b[39m`)
+
+      // Go back to main menu.
+      await userMenu()
+  })
+
+}
+
+
