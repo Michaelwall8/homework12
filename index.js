@@ -78,6 +78,15 @@ async function userMenu() {
           view_departments,
           view_roles,
           view_budgets,
+          new inquirer.Separator(db.add),
+          new inquirer.Separator(),
+          add_department,
+          add_role,
+          add_employee,
+          new inquirer.Separator(db.updates),
+          new inquirer.Separator(),
+          update_employee_role,
+          update_employee_manager,
           
       ]
 
@@ -99,6 +108,26 @@ async function userMenu() {
               break;
           case view_budgets:
               await viewBudgets();
+              break;
+              case add_employee:
+              await addEmployee();
+              break;        
+          case add_department:
+              await addDepartment();
+              break;
+          case add_role:
+              await addRole();
+              break;
+          case update_employee_role:
+              await updateEmployeeRole();
+              break;
+          case update_employee_manager:
+              await updateEmployeeManager();
+              break;
+          case db.exit:
+              console.log(db.goodbye)
+              console.log(` \x1b[95m>>> Employee Tracker has ended <<<\x1b[39m`);
+              connection.end();
               break;
          
       };
@@ -299,5 +328,71 @@ async function addRole() {
   })
 
 }
+
+// ----------------------------\ UPDATE /------------------------------ \\
+// update employee Role 
+async function updateEmployeeRole() {
+
+  // Local prompt questions.
+  await inquirer.prompt([{
+      type: 'list',  
+      message: 'Choose Employee',
+      name: 'name',
+      choices: await db.namesGenerator()
+    },
+    {
+      type: 'list',  
+      message: 'Choose New Role',
+      name: 'role',
+      choices: await db.rolesGenerator()
+    }
+  ]).then(async function ({ name, role }) {
+
+      // Gets the database using "MySQL syntax" and returns an array with the requested objects inside.
+      const [rows] = await connection.query('UPDATE employee SET ? WHERE ?',[
+          {role_id: await cnv.getRoleId(role)},
+          {id: await cnv.getEmployeeId(name)}
+      ])
+
+      // Confirms that the action was completed.
+      console.log(`\x1b[92msucced, Employee: ${name}, Role updated${space}\x1b[39m`)
+
+      // Go back to main menu.
+      await userMenu()
+  })
+}
+
+// update employee Manager 
+async function updateEmployeeManager() {
+
+// Local prompt questions.
+await inquirer.prompt([{
+    type: 'list',  
+    message: 'Choose Employee',
+    name: 'name',
+    choices: await db.namesGenerator()
+  },
+  {
+    type: 'list',  
+    message: 'Choose New Manager',
+    name: 'manager',
+    choices: await db.namesGenerator()
+  }
+]).then(async function ({ name, manager }) {
+
+    // Gets the database using "MySQL syntax" and returns an array with the requested objects inside.
+    const [rows] = await connection.query('UPDATE employee SET ? WHERE ?',[
+        {manager_id: await cnv.getEmployeeId(manager)},
+        {id: await cnv.getEmployeeId(name)}
+    ])
+
+    // Confirms that the action was completed.
+    console.log(`\x1b[92msucced, Employee: ${name}, Manager updated${space}\x1b[39m`)
+
+    // Go back to main menu.
+    await userMenu()
+})
+}
+
 
 
