@@ -87,9 +87,14 @@ async function userMenu() {
           new inquirer.Separator(),
           update_employee_role,
           update_employee_manager,
-          
+          new inquirer.Separator(db.deletes),
+          new inquirer.Separator(),
+          delete_employee,
+          delete_department,
+          delete_role,
+          db.exit,
+          new inquirer.Separator()
       ]
-
   }).then(async function (answer) {
     // Depending on your CHOICE, this function will run the corresponding action.
       switch (answer.action) {
@@ -124,6 +129,15 @@ async function userMenu() {
           case update_employee_manager:
               await updateEmployeeManager();
               break;
+          case delete_employee:
+              await deleteEmployee();
+              break;
+          case delete_department:
+              await deleteDepartment();
+              break;
+          case delete_role:
+              await deleteRole();
+              break;          
           case db.exit:
               console.log(db.goodbye)
               console.log(` \x1b[95m>>> Employee Tracker has ended <<<\x1b[39m`);
@@ -394,5 +408,88 @@ await inquirer.prompt([{
 })
 }
 
+// ----------------------------\ DELETE /------------------------------ \\
+// Delete employee
+async function deleteEmployee() {
 
+  // Local prompt questions.
+  await inquirer.prompt([{
+      type: 'list',  
+      message: 'Choose Employee',
+      name: 'name',
+      choices: await db.namesGenerator()
+    }
+  ]).then(async function ({ name }) {
+  
+      // Gets the database using "MySQL syntax" and returns an array with the requested objects inside.
+      const [rows] = await connection.query('DELETE FROM employee WHERE ?', [
+        {
+          id: await cnv.getEmployeeId(name)  
+        }
+    ])
+  
+      // Confirms that the action was completed.
+      console.log(`\x1b[92msucced, Employee: ${name}, deleted${space}\x1b[39m`)
+      await userMenu()
+  })
+  }
+  
+  // Delete department
+  async function deleteDepartment() {
+  
+  // Local prompt questions.
+  await inquirer.prompt([{
+      type: 'list',  
+      message: 'Choose Department',
+      name: 'department',
+      choices: await db.departmentsGenerator()
+    }
+  ]).then(async function ({ department }) {
+  
+      // Gets the database using "MySQL syntax" and returns an array with the requested objects inside.
+      const [rows] = await connection.query('DELETE FROM department WHERE ?', [
+        {
+          id: await cnv.getDepartmentId(department)  
+        }
+    ])
+  
+      // Confirms that the action was completed.
+      console.log(`\x1b[92msucced, Department: ${department}, deleted${space}\x1b[39m`)
+  
+      // Go back to main menu.
+      await userMenu()
+  })
+  }
+  
+  // Delete role
+  async function deleteRole() {
+  
+  // Local prompt questions.
+  await inquirer.prompt([{
+      type: 'list',  
+      message: 'Choose Role',
+      name: 'role',
+      choices: await db.rolesGenerator()
+    }
+  ]).then(async function ({ role }) {
+  
+      // Gets the database using "MySQL syntax" and returns an array with the requested objects inside.
+      const [rows] = await connection.query('DELETE FROM role WHERE ?', [
+        {
+          id: await cnv.getRoleId(role)  
+        }
+    ])
+  
+      // Confirms that the action was completed.
+      console.log(`\x1b[92msucced, Role: ${role}, deleted${space}\x1b[39m`)
+  
+      // Go back to main menu.
+      await userMenu()
+  })
+  }
+  
+  // =====================================================================================================================
+  // ====================================================\ END /==========================================================
+  // =====================================================================================================================
+  
 
